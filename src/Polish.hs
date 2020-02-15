@@ -7,8 +7,7 @@ import Data.Char (digitToInt, isDigit)
 -- "94-1+" --> 6
 -- "123*+" --> 7 
 evaluate :: String -> Int 
-evaluate input = 
-    go [] input 
+evaluate = go []
   where 
     go stack (x:xs) | isDigit x = go (digitToInt x : stack) xs 
     go (y:x:ys) ('+':xs) = go (x + y : ys) xs 

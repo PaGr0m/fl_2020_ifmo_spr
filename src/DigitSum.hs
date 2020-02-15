@@ -9,4 +9,4 @@ evaluate :: String -> Int
 evaluate = sum . map digitToInt . splitOn '+' 
 
 splitOn :: Eq a => a -> [a] -> [a]
-splitOn x xs = filter (/= x) xs  
+splitOn x = filter (/= x)
