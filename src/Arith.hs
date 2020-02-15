@@ -20,11 +20,11 @@ parseExpr = parseSum
 parseMult :: String -> Maybe (AST, String) 
 parseMult input = do
   (x, input') <- parseNum input
-  case input' of
-    '*' : input'' -> do
+  case parseOp input' of
+    Just (Mult, input'') -> do
       (y, input''') <- parseMult input''
       return (BinOp Mult (Num x) y, input''')
-    '/' : input'' -> do
+    Just (Div, input'') -> do
       (y, input''') <- parseMult input''
       return (BinOp Div (Num x) y, input''')
     _ -> return (Num x, input')
@@ -32,11 +32,11 @@ parseMult input = do
 parseSum :: String -> Maybe (AST, String) 
 parseSum input = do
   (x, input') <- parseMult input
-  case input' of
-    '+' : input'' -> do
+  case parseOp input' of
+    Just (Plus, input'') -> do
       (y, input''') <- parseSum input''
       return (BinOp Plus x y, input''')
-    '-' : input'' -> do
+    Just (Minus, input'') -> do
       (y, input''') <- parseSum input''
       return (BinOp Minus x y, input''')
     _ -> return (x, input')
@@ -65,8 +65,7 @@ compute (Num x) = x
 compute (BinOp Plus x y)  = compute x + compute y 
 compute (BinOp Mult x y)  = compute x * compute y 
 compute (BinOp Minus x y) = compute x - compute y 
-compute (BinOp Div x y)   = compute x `div` compute y 
-compute _                 = error "compute not implemented"
+compute (BinOp Div x y)   = compute x `div` compute y
 
 instance Show Operator where 
   show Plus   = "+"
