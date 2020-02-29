@@ -6,6 +6,16 @@ import Combinators
 import Data.Char (digitToInt, isDigit)
 
 
+-- Парсер чисел
+parseNum :: Parser String String Int
+parseNum = toNum <$> go 
+  where
+    digit = satisfy isDigit
+    toNum = foldl (\acc d -> 10 * acc + digitToInt d) 0
+    go = do
+      x <- digit
+      (x:) <$> (go <|> return [])
+
 parseTemplate :: Alternative f => f AST -> f AST -> f Operator -> f AST
 parseTemplate parser1 parser2 operator = 
   (flip BinOp <$> parser1 <*> operator <*> parser2) <|> parser1
@@ -24,15 +34,17 @@ parseSum = parseTemplate parseMult parseSum $ parseOp' opPlus opMinus
     opPlus  = symbol '+'
     opMinus = symbol '-'
 
--- Парсер чисел
-parseNum :: Parser String String Int
-parseNum = toNum <$> go 
+-- Парсер арифметических выражений над целыми числами с операциями +,-,*,/.
+parseExpr :: Parser String String AST
+parseExpr = parseSum
+
+-- Парсер для терма: либо число, либо выражение в скобках.
+-- Скобки не хранятся в AST за ненадобностью.
+parseTerm :: Parser String String AST
+parseTerm = Num <$> parseNum <|> (lbr *> parseSum <* rbr)
   where
-    digit = satisfy isDigit
-    toNum = foldl (\acc d -> 10 * acc + digitToInt d) 0
-    go = do
-      x <- digit
-      (x:) <$> (go <|> return [])
+    lbr = symbol '('
+    rbr = symbol ')'
 
 -- Парсер для операторов
 parseOp :: Parser String String Operator
@@ -48,18 +60,6 @@ toOperator '*'  = return Mult
 toOperator '+'  = return Plus
 toOperator '/'  = return Div
 toOperator _    = fail "Failed toOperator"
-
--- Парсер для терма: либо число, либо выражение в скобках.
--- Скобки не хранятся в AST за ненадобностью.
-parseTerm :: Parser String String AST
-parseTerm = Num <$> parseNum <|> (lbr *> parseSum <* rbr)
-  where
-    lbr = symbol '('
-    rbr = symbol ')'
-
--- Парсер арифметических выражений над целыми числами с операциями +,-,*,/.
-parseExpr :: Parser String String AST
-parseExpr = parseSum
 
 compute :: AST -> Int
 compute (Num x)           = x
