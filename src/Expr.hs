@@ -16,20 +16,21 @@ parseNum = toNum <$> go
       x <- digit
       (x:) <$> (go <|> return [])
 
-parseTemplate :: Alternative f => f AST -> f AST -> f Operator -> f AST
-parseTemplate parser1 parser2 operator = 
-  (flip BinOp <$> parser1 <*> operator <*> parser2) <|> parser1
+parseTemplate :: (Monoid e, Read e) => Parser e i AST -> Parser e i Operator -> Parser e i AST
+parseTemplate parser operator = do
+   (value, values) <- sepBy1' operator parser
+   return $ foldl (\res (op, val) -> BinOp op res val) value values
 
 -- Парсер для произведения/деления термов
 parseMult :: Parser String String AST
-parseMult = parseTemplate parseTerm parseMult $ parseOp' opMult opDiv
+parseMult = parseTemplate parseTerm (parseOp' opMult opDiv)
   where 
     opMult  = symbol '*'
     opDiv   = symbol '/'
   
 -- Парсер для сложения/вычитания множителей
 parseSum :: Parser String String AST
-parseSum = parseTemplate parseMult parseSum $ parseOp' opPlus opMinus
+parseSum = parseTemplate parseMult (parseOp' opPlus opMinus)
   where 
     opPlus  = symbol '+'
     opMinus = symbol '-'
