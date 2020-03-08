@@ -9,5 +9,4 @@ uberExpr :: Monoid e
          -> Parser e i ast
          -> (op -> ast -> ast -> ast)
          -> Parser e i ast
-uberExpr = error "uberExpr undefined"
-
+uberExpr = undefined
