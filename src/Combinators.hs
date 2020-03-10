@@ -70,6 +70,12 @@ sepBy1' sep elem = do
   values <- many' (flip fmap elem . (,) =<< sep) <|> return []
   return (value, values)
 
+sepBy1'' :: (Monoid e, Read e) => Parser e i t1 -> Parser e i t -> Parser e i (t, [(t1, t)])
+sepBy1'' sep elem = do
+    values <- many' (flip fmap elem . (,) =<< sep) <|> return []
+    value <- elem
+    return (value, values)
+
 -- Проверяет, что первый элемент входной последовательности удовлетворяет предикату
 satisfy :: (a -> Bool) -> Parser String [a] a
 satisfy p = Parser $ \case
