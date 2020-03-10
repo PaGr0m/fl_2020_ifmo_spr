@@ -72,9 +72,9 @@ sepBy1' sep elem = do
 
 sepBy1'' :: (Monoid e, Read e) => Parser e i t1 -> Parser e i t -> Parser e i (t, [(t1, t)])
 sepBy1'' sep elem = do
-    values <- many' (flip fmap elem . (,) =<< sep) <|> return []
+    values <- many (flip fmap sep . (,) =<< elem) <|> return []
     value <- elem
-    return (value, values)
+    return (value, fmap (uncurry $ flip (,)) values)
 
 -- Проверяет, что первый элемент входной последовательности удовлетворяет предикату
 satisfy :: (a -> Bool) -> Parser String [a] a

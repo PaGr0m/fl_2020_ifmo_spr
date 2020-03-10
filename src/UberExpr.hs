@@ -20,10 +20,14 @@ uberExpr ((operator, asc) : asts) parser constructor =
     case asc of
         RightAssoc -> right $ sepBy1'' operator (uberExpr asts parser constructor)
         LeftAssoc  -> left  $ sepBy1'  operator (uberExpr asts parser constructor)
-        NoAssoc    -> uberExpr asts (noAsc <|> parser) constructor
+        NoAssoc    -> noAsc (uberExpr asts parser constructor)
     where 
         right val = val >>= \(x, xs) -> 
             return $ foldr (flip $ \ast1 (op, ast2) -> constructor op ast2 ast1) x xs
         left val = val >>= \(x, xs) -> 
             return $ foldl (\ast1 (op, ast2)        -> constructor op ast1 ast2) x xs
-        noAsc = do {ast1 <- parser; op <- operator; ast2 <- parser; return $ constructor op ast1 ast2} 
+        noAsc parser = (do 
+            ast1 <- parser 
+            op <- operator
+            ast2 <- parser
+            return $ constructor op ast1 ast2 ) <|> parser
