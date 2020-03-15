@@ -4,6 +4,7 @@ import AST (AST(..), Operator(..))
 import Control.Applicative (Alternative (..))
 import Combinators 
 import Data.Char (digitToInt, isDigit)
+import UberExpr
 
 
 -- Парсер чисел
@@ -22,15 +23,26 @@ parseTemplate parser operator = do
    return $ foldl (\res (op, val) -> BinOp op res val) value values
 
 -- Парсер для произведения/деления термов
+-- parseMult :: Parser String String AST
+-- parseMult = parseTemplate parseTerm (parseOp' opMult opDiv)
+--   where 
+--     opMult  = symbol '*'
+--     opDiv   = symbol '/'
+
 parseMult :: Parser String String AST
-parseMult = parseTemplate parseTerm (parseOp' opMult opDiv)
+parseMult = uberExpr [(parseOp' opMult opDiv, LeftAssoc)] parseTerm BinOp
   where 
     opMult  = symbol '*'
     opDiv   = symbol '/'
   
 -- Парсер для сложения/вычитания множителей
+-- parseSum :: Parser String String AST
+-- parseSum = parseTemplate parseMult (parseOp' opPlus opMinus)
+--   where 
+--     opPlus  = symbol '+'
+--     opMinus = symbol '-'
 parseSum :: Parser String String AST
-parseSum = parseTemplate parseMult (parseOp' opPlus opMinus)
+parseSum = uberExpr [(parseOp' opPlus opMinus, LeftAssoc)] parseMult BinOp
   where 
     opPlus  = symbol '+'
     opMinus = symbol '-'
