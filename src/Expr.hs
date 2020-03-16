@@ -30,7 +30,7 @@ parseTemplate parser operator = do
 --     opDiv   = symbol '/'
 
 parseMult :: Parser String String AST
-parseMult = uberExpr [(parseOp' opMult opDiv, LeftAssoc)] parseTerm BinOp
+parseMult = uberExpr [(parseOp2 opMult opDiv, LeftAssoc)] parseTerm BinOp
   where 
     opMult  = symbol '*'
     opDiv   = symbol '/'
@@ -42,14 +42,19 @@ parseMult = uberExpr [(parseOp' opMult opDiv, LeftAssoc)] parseTerm BinOp
 --     opPlus  = symbol '+'
 --     opMinus = symbol '-'
 parseSum :: Parser String String AST
-parseSum = uberExpr [(parseOp' opPlus opMinus, LeftAssoc)] parseMult BinOp
+parseSum = uberExpr [(parseOp2 opPlus opMinus, LeftAssoc)] parseMult BinOp
   where 
     opPlus  = symbol '+'
     opMinus = symbol '-'
 
 -- Парсер арифметических выражений над целыми числами с операциями +,-,*,/.
 parseExpr :: Parser String String AST
-parseExpr = parseSum
+parseExpr = uberExpr [(parseOp2 opPlus opMinus, LeftAssoc), (parseOp2 opMult opDiv, LeftAssoc)] parseTerm BinOp
+  where 
+    opPlus  = symbol '+'
+    opMinus = symbol '-'
+    opMult  = symbol '*'
+    opDiv   = symbol '/'
 
 -- Парсер для терма: либо число, либо выражение в скобках.
 -- Скобки не хранятся в AST за ненадобностью.
@@ -63,8 +68,8 @@ parseTerm = Num <$> parseNum <|> (lbr *> parseSum <* rbr)
 parseOp :: Parser String String Operator
 parseOp = elem' >>= toOperator
 
-parseOp' :: Parser String String Char -> Parser String String Char -> Parser String String Operator
-parseOp' op1 op2 = (op1 <|> op2) >>= toOperator
+parseOp2 :: Parser String String Char -> Parser String String Char -> Parser String String Operator
+parseOp2 op1 op2 = (op1 <|> op2) >>= toOperator
 
 -- Преобразование символов операторов в операторы
 toOperator :: Char -> Parser String String Operator
