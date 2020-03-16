@@ -1,8 +1,8 @@
 module Test.Combinators where
 
-import           Combinators      (Parser, Result (..), elem', many', runParser,
-                                   satisfy, sepBy1, some', symbol)
-import           Test.Tasty.HUnit (Assertion, (@?=))
+import           Combinators (Parser, Result (..), elem', many', runParser,
+                              satisfy, sepBy1, some', symbol)
+import           Test.HUnit  (Assertion, (@?=))
 
 predErrMsg :: String
 predErrMsg = "Predicate failed"
@@ -42,3 +42,4 @@ unit_sepBy = do
     runParser (sepBy1 (symbol ',') digit) "" @?= Failure predErrMsg
     runParser (sepBy1 (symbol ',') digit) "1,4," @?= Success "," ['1', '4']
     runParser (sepBy1 (symbol ',') digit) "1,1,4" @?= Success "" ['1', '1', '4']
+    
