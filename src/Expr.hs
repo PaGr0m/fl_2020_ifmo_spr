@@ -23,12 +23,6 @@ parseTemplate parser operator = do
    return $ foldl (\res (op, val) -> BinOp op res val) value values
 
 -- Парсер для произведения/деления термов
--- parseMult :: Parser String String AST
--- parseMult = parseTemplate parseTerm (parseOp' opMult opDiv)
---   where 
---     opMult  = symbol '*'
---     opDiv   = symbol '/'
-
 parseMult :: Parser String String AST
 parseMult = uberExpr [(parseOp2 opMult opDiv, LeftAssoc)] parseTerm BinOp
   where 
@@ -36,11 +30,6 @@ parseMult = uberExpr [(parseOp2 opMult opDiv, LeftAssoc)] parseTerm BinOp
     opDiv   = symbol '/'
   
 -- Парсер для сложения/вычитания множителей
--- parseSum :: Parser String String AST
--- parseSum = parseTemplate parseMult (parseOp' opPlus opMinus)
---   where 
---     opPlus  = symbol '+'
---     opMinus = symbol '-'
 parseSum :: Parser String String AST
 parseSum = uberExpr [(parseOp2 opPlus opMinus, LeftAssoc)] parseMult BinOp
   where 
