@@ -23,13 +23,9 @@ IF ::= "if" '(' EXPRESSION ')' '{' COMPUTATION '}'
 ELSE_IF ::= "else if" '(' EXPRESSION ')' '{' COMPUTATION '}'
 ELSE ::= "else" '{' COMPUTATION '}'
 
-CYCLE ::= WHILE 
-        | FOR
-        | WHILE CYCLE
-        | FOR CYCLE
-
-WHILE ::= "while" '(' EXPRESSION ')' '{' COMPUTATION '}'
-FOR ::= "for" '(' EXPRESSION ')' '{' COMPUTATION '}'
+CYCLE_KEYWORD = "while" | "for"
+CYCLE ::= CYCLE_KEYWORD '(' EXPRESSION ')' '{' COMPUTATION '}' 
+        | CYCLE_KEYWORD '(' EXPRESSION ')' '{' COMPUTATION '}' CYCLE
 
 ASSIGNMENT_LIST ::= ASSIGNMENT | ASSIGNMENT ASSIGNMENT_LIST
 ASSIGNMENT ::= IDENT '=' EXPRESSION ';'
