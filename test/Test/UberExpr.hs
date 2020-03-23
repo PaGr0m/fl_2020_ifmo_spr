@@ -4,9 +4,10 @@ import           AST                 (AST (..), Operator (..))
 import           Combinators         (symbol, Parser (..), Result (..), runParser)
 import           Control.Applicative ((<|>))
 import           Expr                (toOperator, parseNum)
-import           Test.Tasty.HUnit    (Assertion (..), (@?=))
+-- import           Test.Tasty.HUnit    (Assertion (..), (@?=))
 import           Text.Printf         (printf)
 import           UberExpr            (Associativity (..), uberExpr)
+import           Test.Tasty.HUnit
 
 mult  = symbol '*' >>= toOperator
 sum'  = symbol '+' >>= toOperator
@@ -42,10 +43,11 @@ unit_expr1 = do
 unit_expr2 :: Assertion
 unit_expr2 = do
   runParser expr2 "13" @?= Success "" (Num 13)
-  runParser expr2 "(((1)))" @?= Failure ""
+  runParser expr2 "(((1)))" @?= Failure "Predicate failed"
   runParser expr2 "1+2*3-4/5" @?= Success "" (BinOp Div (BinOp Minus (BinOp Mult (BinOp Plus (Num 1) (Num 2)) (Num 3)) (Num 4)) (Num 5))
   runParser expr2 "1+2+3" @?= Success "" (BinOp Plus (BinOp Plus (Num 1) (Num 2)) (Num 3))
   runParser expr2 "1*2*3" @?= Success "" (BinOp Mult (BinOp Mult (Num 1) (Num 2)) (Num 3))
   runParser expr2 "1/2/3" @?= Success "" (BinOp Div (BinOp Div (Num 1) (Num 2)) (Num 3))
   runParser expr2 "1-2-3" @?= Success "" (BinOp Minus (BinOp Minus (Num 1) (Num 2)) (Num 3))
   runParser expr2 "1-2*3/4+5*6-7-8/9" @?= Success "" (BinOp Div (BinOp Minus (BinOp Minus (BinOp Mult (BinOp Plus (BinOp Div (BinOp Mult (BinOp Minus (Num 1) (Num 2)) (Num 3)) (Num 4)) (Num 5)) (Num 6)) (Num 7)) (Num 8)) (Num 9))
+  
