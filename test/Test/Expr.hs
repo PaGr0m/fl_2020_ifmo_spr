@@ -2,8 +2,12 @@ module Test.Expr where
 
 import           AST              (AST (..), Operator (..))
 import           Combinators      (Result (..), runParser)
-import           Expr             (evaluate, parseNum, parseOp,
-                                   parseExpr, parseIdent)
+import           Expr             (evaluate, 
+                                   parseNum, 
+                                   parseOp,
+                                   parseIdent,
+                                   parseExpr
+                                   )
 import           Test.Tasty.HUnit (Assertion, (@?=), assertBool)
 
 isFailure (Failure _) = True
@@ -33,17 +37,26 @@ unit_parseNum = do
     runParser parseNum "7" @?= Success "" 7
     runParser parseNum "12+3" @?= Success "+3" 12
     runParser parseNum "007" @?= Success "" 7
+    runParser parseNum "-007" @?= Success "" (-7)
+    runParser parseNum "--007" @?= Success "" (7)
+    runParser parseNum "----007" @?= Success "" (7)
+    runParser parseNum "----007+--3" @?= Success "+--3" (7)
     isFailure (runParser parseNum "+3") @?= True
     isFailure (runParser parseNum "a") @?= True
+    isFailure (runParser parseNum "?3") @?= True
 
 unit_parseNegNum :: Assertion
 unit_parseNegNum = do
     runParser parseNum "123" @?= Success "" 123
     runParser parseNum "-123" @?= Success "" (-123)
     runParser parseNum "--123" @?= Success "" 123
+    runParser parseNum "--42" @?= Success "" 42
     assertBool "" $ isFailure $ runParser parseNum "+-3"
     assertBool "" $ isFailure $ runParser parseNum "-+3"
     assertBool "" $ isFailure $ runParser parseNum "-a"
+    assertBool "" $ isFailure $ runParser parseNum "--a"
+    assertBool "" $ isFailure $ runParser parseNum "--    123"
+    assertBool "" $ isFailure $ runParser parseNum "- 42"
 
 unit_parseIdent :: Assertion
 unit_parseIdent = do
@@ -58,7 +71,6 @@ unit_parseIdent = do
     assertBool "" $ isFailure $ runParser parseIdent "123abc"
     assertBool "" $ isFailure $ runParser parseIdent "123"
     assertBool "" $ isFailure $ runParser parseIdent ""
-
 
 unit_parseOp :: Assertion
 unit_parseOp = do
@@ -94,4 +106,3 @@ unit_parseExpr = do
     runParser parseExpr "1||x" @?= Success "" (BinOp Or (Num 1) (Ident "x"))
     runParser parseExpr "(1==x+2)||3*4<y-5/6&&(7/=z^8)||(id>12)&&abc<=13||xyz>=42" @?=
       runParser parseExpr "(1==(x+2))||(((3*4)<(y-(5/6))&&(7/=(z^8)))||(((id>12)&&(abc<=13))||(xyz>=42)))"
-

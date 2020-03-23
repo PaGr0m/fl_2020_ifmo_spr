@@ -1,7 +1,11 @@
 module Main where
 
 import           Combinators (runParser, Result (..))
-import           Expr        (evaluate, parseExpr, parseNum, parseOp)
+import           Expr        (evaluate, 
+                              parseExpr, 
+                              parseNum, 
+                              parseOp
+                              )
 import           Text.Printf (printf)
 
 fm0 :: String

@@ -37,7 +37,6 @@ instance Show Operator where
   show And    = "&&"
   show Or     = "||"
 
-
 instance Show AST where
   show  = printf "\n%s" . go 0
     where

@@ -88,7 +88,10 @@ elem' = satisfy (const True)
 
 -- Проверяет, что первый элемент входной последовательности -- данный символ
 symbol :: (Eq a) => a -> Parser String [a] a
-symbol c = satisfy (==c)
+symbol c = satisfy (== c)
+
+symbols :: String -> Parser String String String
+symbols = foldr (\ x -> (<*>) ((:) <$> satisfy (== x))) (return [])
 
 -- Последовательное применение одного и того же парсера 0 или более раз
 many' :: (Monoid e, Read e) =>  Parser e i a -> Parser e i [a]

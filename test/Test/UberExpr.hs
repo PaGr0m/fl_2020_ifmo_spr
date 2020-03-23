@@ -1,7 +1,7 @@
 module Test.UberExpr where
 
 import           AST                 (AST (..), Operator (..))
-import           Combinators         (symbol, Parser (..), Result (..), runParser, fail')
+import           Combinators         (symbol, Parser (..), Result (..), runParser)
 import           Control.Applicative ((<|>))
 import           Expr                (parseNum)
 import           Test.Tasty.HUnit    (Assertion (..), (@?=))
@@ -14,7 +14,7 @@ toOperator '+' = return Plus
 toOperator '*' = return Mult
 toOperator '-' = return Minus
 toOperator '/' = return Div
-toOperator _   = fail' "Failed toOperator"
+toOperator _   = fail "Failed toOperator"
 
 mult  = symbol '*' >>= toOperator
 sum'  = symbol '+' >>= toOperator
