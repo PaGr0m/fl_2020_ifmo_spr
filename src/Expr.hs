@@ -18,25 +18,6 @@ parseNum = toNum <$> helper
       digits <- some (satisfy isDigit)
       return (digits ++ signs)
 
-parseTemplate :: (Monoid e, Read e) => Parser e i AST -> Parser e i Operator -> Parser e i AST
-parseTemplate parser operator = do
-   (value, values) <- sepBy1' operator parser
-   return $ foldl (\res (op, val) -> BinOp op res val) value values
-
--- Парсер для произведения/деления термов
-parseMult :: Parser String String AST
-parseMult = uberExpr [(parseOp2 opMult opDiv, LeftAssoc)] parseTerm BinOp
-  where 
-    opMult  = symbols "*"
-    opDiv   = symbols "/"
-  
--- Парсер для сложения/вычитания множителей
-parseSum :: Parser String String AST
-parseSum = uberExpr [(parseOp2 opPlus opMinus, LeftAssoc)] parseMult BinOp
-  where 
-    opPlus  = symbols "+"
-    opMinus = symbols "-"
-
 parseIdent :: Parser String String String
 parseIdent = do
   headIdent <- some $ satisfy isLetter <|> symbol '_'
@@ -46,14 +27,17 @@ parseIdent = do
 -- Парсер арифметических выражений над целыми числами с операциями +,-,*,/.
 parseExpr :: Parser String String AST
 parseExpr = uberExpr [
-  (parseOp1 opOr,  RightAssoc),
-  (parseOp1 opAnd, RightAssoc),
-  (parseOpCompare opEqual opNequal opGe opLe opGt opLt, NoAssoc),
-  (parseOp2 opPlus opMinus, LeftAssoc), 
-  (parseOp2 opMult opDiv,   LeftAssoc),
-  (parseOp1 opPow,          RightAssoc)
-  ] parseTermOrIdent BinOp
+  (parseOp1 opOr,  Binary RightAssoc),
+  (parseOp1 opAnd, Binary RightAssoc),
+  (parseOp1 opNot, Unary),
+  (parseOpCompare opEqual opNequal opGe opLe opGt opLt, Binary NoAssoc),
+  (parseOp2 opPlus opMinus, Binary LeftAssoc), 
+  (parseOp2 opMult opDiv,   Binary LeftAssoc),
+  (parseOp1 opMinus, Unary),
+  (parseOp1 opPow, Binary RightAssoc)
+  ] parseTermOrIdent BinOp UnaryOp
   where 
+    opNot     = symbols "!"
     opOr      = symbols "||"
     opAnd     = symbols "&&"
     opEqual   = symbols "=="
@@ -70,14 +54,8 @@ parseExpr = uberExpr [
 
 -- Парсер для терма: либо число, либо выражение в скобках.
 -- Скобки не хранятся в AST за ненадобностью.
-parseTerm :: Parser String String AST
-parseTerm = Num <$> parseNum <|> (lbr *> parseSum <* rbr)
-  where
-    lbr = symbol '('
-    rbr = symbol ')'
-
 parseTermOrIdent :: Parser String String AST
-parseTermOrIdent = Num <$> parseNum <|> Ident <$> parseIdent <|> (lbr *> parseSum <* rbr)
+parseTermOrIdent = Num <$> parseNum <|> Ident <$> parseIdent <|> (lbr *> parseExpr <* rbr)
   where
     lbr = symbol '('
     rbr = symbol ')'
@@ -90,7 +68,7 @@ parseOp = go operators >>= toOperator
     go (x:xs) = symbols x <|> go xs
     operators = ["+", "-", "*", "/", "^", 
                  "==", "/=", "<=", ">=", ">", "<", 
-                 "&&", "||"]
+                 "&&", "||", "!"]
 
 parseOp1 :: Parser String String String -> Parser String String Operator
 parseOp1 op = op >>= toOperator
@@ -109,6 +87,7 @@ parseOpCompare op1 op2 op3 op4 op5 op6 = (op1 <|> op2 <|> op3 <|> op4 <|> op5 <|
 
 -- Преобразование символов операторов в операторы
 toOperator :: String -> Parser String String Operator
+toOperator "!"  = return Not
 toOperator "||" = return Or
 toOperator "&&" = return And
 toOperator "==" = return Equal
@@ -126,11 +105,13 @@ toOperator _    = fail "Failed toOperator"
 
 compute :: AST -> Int
 compute (Num x)             = x
+compute (UnaryOp Minus x)   = - (compute x)
 compute (BinOp Plus x y)    = (+) (compute x) (compute y)
 compute (BinOp Minus x y)   = (-) (compute x) (compute y)
 compute (BinOp Mult x y)    = (*) (compute x) (compute y)
 compute (BinOp Div x y)     = div (compute x) (compute y)
 compute (BinOp Pow x y)     = (^) (compute x) (compute y)
+compute (UnaryOp Not x)     = fromEnum $ (==) (compute x) 0
 compute (BinOp Equal x y)   = fromEnum $ (==) (compute x) (compute y)
 compute (BinOp Nequal x y)  = fromEnum $ (/=) (compute x) (compute y)
 compute (BinOp Gt x y)      = fromEnum $ (>)  (compute x) (compute y)
