@@ -31,11 +31,12 @@ parseBranching = parseIf <|> parseElseIf <|> parseElse
 
 parseVar :: Parser String String String
 parseVar = do 
-  symbols "Var"
-  parseSpaces
-  var <- parseIdent
-  parseSpaces
-  symbols ";"
+    symbols "Var"
+    parseSpaces
+    var <- parseIdent
+    parseSpaces
+    symbols ";"
+    return var
 
 parseIf :: Parser String String LAst
 parseIf = do 

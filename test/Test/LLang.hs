@@ -28,3 +28,24 @@ unit_parseElse = do
     runParser parseElse "else {x=2}" @?= Success "" 
         (Else (Assign "x" (Num 2)))
     
+
+unit_parseElseIf :: Assertion
+unit_parseElseIf = do
+    runParser parseElseIf "else if (42>2) {x=2}" @?= Success "" 
+        (ElseIf 
+            ((BinOp Gt (Num 42) (Num 2))) 
+             (Assign "x" (Num 2))
+            )
+
+unit_parseCycle :: Assertion
+unit_parseCycle = do
+    runParser parseCycle "while (3==3) {x=2}" @?= Success "" 
+        (While 
+            (BinOp Equal (Num 3) (Num 3)) 
+             (Assign "x" (Num 2))
+            )
+
+unit_parseAssigment :: Assertion
+unit_parseAssigment = do
+    runParser parseAssigment "abc=239;" @?= Success "" 
+        (Assign "abc" (Num 239))
