@@ -2,6 +2,8 @@ module LLang where
 
 import AST (AST (..), Operator (..), Subst (..))
 import Combinators (Parser (..))
+import Control.Monad
+import Expr
 import qualified Data.Map as Map
 import Data.List (intercalate)
 import Text.Printf (printf)
@@ -10,8 +12,11 @@ type Expr = AST
 
 type Var = String
 
-data Configuration = Conf { subst :: Subst, input :: [Int], output :: [Int] }
-                   deriving (Show, Eq)
+data Configuration = Conf { 
+  subst :: Subst,
+  input :: [Int], 
+  output :: [Int] 
+} deriving (Show, Eq)
 
 
 data LAst
@@ -45,7 +50,49 @@ initialConf :: [Int] -> Configuration
 initialConf input = Conf Map.empty input []
 
 eval :: LAst -> Configuration -> Maybe Configuration
-eval = error "eval not defined"
+eval (If cond thn els) conf = do
+  value <- evalExpr (subst conf) cond
+  let branch = if value /= 0 then thn else els
+  eval branch conf
+
+eval (While cond body) conf = do
+  value <- evalExpr (subst conf) cond
+  if value == 0 
+    then return conf 
+    else do 
+      conf' <- eval body conf
+      eval (While cond body) conf'
+
+eval (Assign var expr) conf = do
+  value <- evalExpr (subst conf) expr
+  return Conf {
+    subst  = Map.insert var value (subst conf), 
+    input  = input conf, 
+    output = output conf
+  }
+
+eval (Read var) conf = do
+  let inp = input conf
+  guard (not $ null inp)
+  let (value : input') = inp
+  return Conf {
+    subst = Map.insert var value (subst conf),
+    input = input',
+    output = output conf
+  }
+
+eval (Write expr) conf = do
+  value <- evalExpr (subst conf) expr
+  return Conf {
+    subst = subst conf,
+    input = input conf,
+    output = value : (output conf)
+  }
+
+eval (Seq []) conf = return conf
+eval (Seq (lAst:lAsts)) conf = do
+  conf' <- eval lAst conf
+  eval (Seq lAsts) conf'
 
 instance Show LAst where
   show =
