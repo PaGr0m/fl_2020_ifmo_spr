@@ -2,6 +2,7 @@ module LLang where
 
 import AST (AST (..), Operator (..))
 import Control.Applicative (Alternative (..))
+import Expr (parseExpr)
 import Combinators
 import Expr
 
@@ -11,8 +12,6 @@ type Var = String
 
 data LAst
   = If { cond :: Expr, thn :: LAst}
-  | ElseIf { cond :: Expr, thn :: LAst}
-  | Else { thn :: LAst}
   | While { cond :: Expr, body :: LAst }
   | Assign { var :: Var, expr :: Expr }
   | Read { var :: Var }
@@ -27,12 +26,10 @@ parseComputation :: Parser String String LAst
 parseComputation = parseAssigment <|> parseBranching <|> parseCycle
 
 parseBranching :: Parser String String LAst
-parseBranching = parseIf <|> parseElseIf <|> parseElse
+parseBranching = parseIf *> parseElseIf *> parseElse
 
 parseVar :: Parser String String String
 parseVar = do 
-    symbols "Var"
-    parseSpaces
     var <- parseIdent
     parseSpaces
     symbols ";"
@@ -53,7 +50,10 @@ parseIf = do
     comp <- parseComputation
     parseSpaces
     symbols "}"
-    return (If expression comp)
+    return If {
+        cond = expression,
+        thn = comp
+    } 
 
 parseElseIf :: Parser String String LAst
 parseElseIf = do 
@@ -70,7 +70,10 @@ parseElseIf = do
     comp <- parseComputation
     parseSpaces
     symbols "}"
-    return (ElseIf expression comp)
+    return If {
+        cond = expression,
+        thn = comp
+    } 
 
 parseElse :: Parser String String LAst
 parseElse = do 
@@ -81,7 +84,24 @@ parseElse = do
     comp <- parseComputation
     parseSpaces
     symbols "}"
-    return (Else comp)
+    return If {
+        cond = Num 0,
+        thn = comp
+    }
+
+parseRead :: Parser String String LAst
+parseRead = do 
+    symbols "read"
+    parseSpaces
+    var <- parseVar
+    return (Read var) 
+
+parseWrite :: Parser String String LAst
+parseWrite = do
+    symbols "write"
+    parseSpaces
+    expr <- parseExpr
+    return (Write expr) 
 
 parseCycle :: Parser String String LAst
 parseCycle = do

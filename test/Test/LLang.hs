@@ -10,42 +10,37 @@ import Text.Printf         (printf)
 import LLang
 
 
+
 unit_parseIf :: Assertion
 unit_parseIf = do
-    runParser parseIf "if(42>2){x=2}" @?= Success "" 
-        (If 
-            ((BinOp Gt (Num 42) (Num 2))) 
-            (Assign "x" (Num 2))
-            )
-    runParser parseIf "if(x<2){y=2}" @?= Success "" 
-        (If 
-            ((BinOp Gt (Ident "x") (Num 2))) 
-            (Assign "y" (Num 2))
-            )
-
-unit_parseElse :: Assertion
-unit_parseElse = do
-    runParser parseElse "else {x=2}" @?= Success "" 
-        (Else (Assign "x" (Num 2)))
-    
-
-unit_parseElseIf :: Assertion
-unit_parseElseIf = do
-    runParser parseElseIf "else if (42>2) {x=2}" @?= Success "" 
-        (ElseIf 
-            ((BinOp Gt (Num 42) (Num 2))) 
-             (Assign "x" (Num 2))
-            )
+    runParser (parseIf *> parseElse) "if (x) {x = 13;}else {x = 42;}"  @?= 
+        Success "" (If {cond = Num 0, thn = Assign {var = "x", expr = Num 42}})
+    runParser (parseIf) "if (x) {x = 13;}" @?= 
+        Success "" (If {cond = Ident "x", thn = Assign {var = "x", expr = Num 13}})
+    runParser (parseIf *> parseElse) "if (x) {x = 13;} else {x = 42;}" @?= 
+        Failure "Predicate failed"
 
 unit_parseCycle :: Assertion
 unit_parseCycle = do
-    runParser parseCycle "while (3==3) {x=2}" @?= Success "" 
-        (While 
-            (BinOp Equal (Num 3) (Num 3)) 
-             (Assign "x" (Num 2))
-            )
+    runParser parseCycle "while (3==3) {x=2;}" @?= 
+        Success "" (While (BinOp Equal (Num 3) (Num 3)) (Assign "x" (Num 2)))
+    runParser parseCycle "while (x) {x=42;}" @?= 
+        Success "" (While (Ident "x") (Assign "x" (Num 42)))
 
 unit_parseAssigment :: Assertion
 unit_parseAssigment = do
-    runParser parseAssigment "abc=239;" @?= Success "" 
-        (Assign "abc" (Num 239))
+    runParser parseAssigment "abc=239;" @?= 
+        Success "" (Assign {var = "abc", expr = Num 239})
+    runParser parseAssigment "counter=0;" @?= 
+        Success "" (Assign {var = "counter", expr = Num 0})
+    runParser parseAssigment "abc=239" @?= 
+        Failure "Predicate failed"
+
+unit_parseRead :: Assertion
+unit_parseRead = do
+    runParser parseRead "read x;" @?= Success "" (Read {var = "x"})
+
+unit_parseWrite :: Assertion
+unit_parseWrite = do
+    runParser parseWrite "write 42" @?= Success "" (Write (Num 42))
+    

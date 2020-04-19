@@ -1,30 +1,14 @@
 module Expr where
 
-import AST (AST(..), Operator(..))
+import AST (AST (..), Operator (..))
 import Control.Applicative (Alternative (..))
-import Combinators 
-import Data.Char (digitToInt, isDigit, isLetter)
+import Combinators
 import UberExpr
+import Data.Char
+import Data.Bool
 
 
-parseNum :: Parser String String Int
-parseNum = toNum <$> helper
-  where
-    toNum = foldl func 0
-    func acc '-' = negate acc
-    func acc digit   = 10 * acc + digitToInt digit
-    helper = do 
-      signs  <- many (symbol '-')
-      digits <- some (satisfy isDigit)
-      return (digits ++ signs)
-
-parseIdent :: Parser String String String
-parseIdent = do
-  headIdent <- some $ satisfy isLetter <|> symbol '_'
-  tailIdent <- many $ satisfy isLetter <|> symbol '_' <|> satisfy isDigit
-  return (headIdent ++ tailIdent)
-
--- Парсер арифметических выражений над целыми числами с операциями +,-,*,/.
+-- Парсер арифметических выражений над целыми числами
 parseExpr :: Parser String String AST
 parseExpr = uberExpr [
   (parseOp1 opOr,  Binary RightAssoc),
@@ -52,10 +36,38 @@ parseExpr = uberExpr [
     opDiv     = symbols "/"
     opPow     = symbols "^"
 
+parseIdent :: Parser String String String
+parseIdent = do
+  headIdent <- some $ satisfy isLetter <|> symbol '_'
+  tailIdent <- many $ satisfy isLetter <|> symbol '_' <|> satisfy isDigit
+  return (headIdent ++ tailIdent)
+
+-- Парсер чисел
+parsePosNum :: Parser String String Int
+parsePosNum = toNum <$> go 
+  where
+    digit = satisfy isDigit
+    toNum = foldl (\acc d -> 10 * acc + digitToInt d) 0
+    go = do
+      x <- digit
+      (x:) <$> (go <|> return [])
+
+parseNum :: Parser String String Int
+parseNum = toNum <$> helper
+  where
+    toNum = foldl func 0
+    func acc '-' = negate acc
+    func acc digit   = 10 * acc + digitToInt digit
+    helper = do 
+      signs  <- many (symbol '-')
+      digits <- some (satisfy isDigit)
+      return (digits ++ signs)
+
+-- Парсер для операторов
 -- Парсер для терма: либо число, либо выражение в скобках.
 -- Скобки не хранятся в AST за ненадобностью.
 parseTermOrIdent :: Parser String String AST
-parseTermOrIdent = Num <$> parseNum <|> Ident <$> parseIdent <|> (lbr *> parseExpr <* rbr)
+parseTermOrIdent = Num <$> parsePosNum <|> Ident <$> parseIdent <|> (lbr *> parseExpr <* rbr)
   where
     lbr = symbol '('
     rbr = symbol ')'
