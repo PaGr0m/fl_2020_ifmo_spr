@@ -25,7 +25,7 @@ type Subst = Map.Map String Int
 data AST = BinOp Operator AST AST
          | UnaryOp Operator AST
          | Ident String
-         | Num  Int
+         | Num Int
          | FunctionCall String [AST]
          deriving (Eq)
 
