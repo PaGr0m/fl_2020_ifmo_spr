@@ -400,15 +400,17 @@ alexGetByte (_,[],(c:s)) = case utf8Encode c of
 alex_tab_size :: Int
 alex_tab_size = 8
 alex_base :: Array Int Int
-alex_base = listArray (0 :: Int, 3)
+alex_base = listArray (0 :: Int, 5)
   [ -8
   , -3
-  , -67
-  , 50
+  , 18
+  , 76
+  , 0
+  , 0
   ]
 
 alex_table :: Array Int Int
-alex_table = listArray (0 :: Int, 305)
+alex_table = listArray (0 :: Int, 331)
   [ 0
   , 1
   , 1
@@ -436,68 +438,94 @@ alex_table = listArray (0 :: Int, 305)
   , 1
   , 0
   , 0
-  , 0
+  , 4
   , 0
   , 1
-  , 2
-  , 2
-  , 2
-  , 2
-  , 2
-  , 2
-  , 2
-  , 2
-  , 2
-  , 2
-  , 2
-  , 2
-  , 2
-  , 2
-  , 2
-  , 2
-  , 2
-  , 2
-  , 2
-  , 2
-  , 2
-  , 2
-  , 2
-  , 2
-  , 2
-  , 2
-  , 0
-  , 3
-  , 3
-  , 3
-  , 3
-  , 3
-  , 3
-  , 3
-  , 3
-  , 3
-  , 3
-  , 3
-  , 3
-  , 3
-  , 3
-  , 3
-  , 3
-  , 3
-  , 3
-  , 3
-  , 3
-  , 3
-  , 3
-  , 3
-  , 3
-  , 3
-  , 3
   , 0
   , 0
   , 0
   , 0
   , 0
   , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 5
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 3
+  , 3
+  , 3
+  , 3
+  , 3
+  , 3
+  , 3
+  , 3
+  , 3
+  , 3
+  , 3
+  , 3
+  , 3
+  , 3
+  , 3
+  , 3
+  , 3
+  , 3
+  , 3
+  , 3
+  , 3
+  , 3
+  , 3
+  , 3
+  , 3
+  , 3
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
   , 2
   , 2
   , 2
@@ -718,7 +746,7 @@ alex_table = listArray (0 :: Int, 305)
   ]
 
 alex_check :: Array Int Int
-alex_check = listArray (0 :: Int, 305)
+alex_check = listArray (0 :: Int, 331)
   [ -1
   , 9
   , 10
@@ -746,35 +774,35 @@ alex_check = listArray (0 :: Int, 305)
   , 32
   , -1
   , -1
-  , -1
+  , 35
   , -1
   , 32
-  , 97
-  , 98
-  , 99
-  , 100
-  , 101
-  , 102
-  , 103
-  , 104
-  , 105
-  , 106
-  , 107
-  , 108
-  , 109
-  , 110
-  , 111
-  , 112
-  , 113
-  , 114
-  , 115
-  , 116
-  , 117
-  , 118
-  , 119
-  , 120
-  , 121
-  , 122
+  , -1
+  , -1
+  , -1
+  , -1
+  , -1
+  , -1
+  , -1
+  , -1
+  , -1
+  , -1
+  , -1
+  , -1
+  , -1
+  , -1
+  , -1
+  , -1
+  , -1
+  , -1
+  , -1
+  , -1
+  , -1
+  , 59
+  , -1
+  , -1
+  , -1
+  , -1
   , -1
   , 65
   , 66
@@ -808,6 +836,32 @@ alex_check = listArray (0 :: Int, 305)
   , -1
   , -1
   , -1
+  , 97
+  , 98
+  , 99
+  , 100
+  , 101
+  , 102
+  , 103
+  , 104
+  , 105
+  , 106
+  , 107
+  , 108
+  , 109
+  , 110
+  , 111
+  , 112
+  , 113
+  , 114
+  , 115
+  , 116
+  , 117
+  , 118
+  , 119
+  , 120
+  , 121
+  , 122
   , 97
   , 98
   , 99
@@ -1028,34 +1082,51 @@ alex_check = listArray (0 :: Int, 305)
   ]
 
 alex_deflt :: Array Int Int
-alex_deflt = listArray (0 :: Int, 3)
+alex_deflt = listArray (0 :: Int, 5)
   [ -1
   , -1
   , -1
   , -1
+  , -1
+  , -1
   ]
 
-alex_accept = listArray (0 :: Int, 3)
+alex_accept = listArray (0 :: Int, 5)
   [ AlexAccNone
   , AlexAccSkip
+  , AlexAcc 3
+  , AlexAcc 2
   , AlexAcc 1
   , AlexAcc 0
   ]
 
-alex_actions = array (0 :: Int, 2)
-  [ (1,alex_action_1)
-  , (0,alex_action_2)
+alex_actions = array (0 :: Int, 4)
+  [ (3,alex_action_1)
+  , (2,alex_action_2)
+  , (1,alex_action_3)
+  , (0,alex_action_4)
   ]
 
-{-# LINE 16 "Lexer.x" #-}
+{-# LINE 20 "Lexer.x" #-}
 
-data Token = TokenTerminal String 
+data Token = TokenTerminal String
            | TokenNonterminal String
+           | TokenEpsilon String
            | TokenEmpty
+           | TokenDelimiter String
            deriving Show
+
+tokenValue (TokenTerminal v) = v
+tokenValue (TokenNonterminal v) = v
+tokenValue (TokenEpsilon v) = v
+tokenValue (TokenDelimiter v) = v
+tokenValue _ = undefined
+
 
 alex_action_1 = TokenTerminal
 alex_action_2 = TokenNonterminal
+alex_action_3 = TokenEpsilon
+alex_action_4 = TokenDelimiter
 {-# LINE 1 "templates/GenericTemplate.hs" #-}
 {-# LINE 1 "templates/GenericTemplate.hs" #-}
 {-# LINE 1 "<built-in>" #-}

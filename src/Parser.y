@@ -12,25 +12,30 @@ import qualified Lexer
 %token
     terminal    { Lexer.TokenTerminal _ }
     nonterminal { Lexer.TokenNonterminal _ }
+    epsilon     { Lexer.TokenEpsilon _ }
+    delimiter   { Lexer.TokenDelimiter _ }
 %%
 
-Rule : LeftPart RightPart           { Rule (LeftPart $1) (RightPart $2) }
-LeftPart : nonterminal              { LeftPart (StartTerminal $1) }
-RightPart : nonterminal RightPart   { [Nonterminal $1] ++ $2 }
-          | terminal RightPart      { [Terminal $1] ++ $2 }
-          | nonterminal             { RightPart [Nonterminal $1] }
-          | terminal                { RightPart [Terminal $1] }
+Rules : Rule Rules                                  { ($1:$2) }
+      | Rule                                        { [$1] }
+Rule : LeftPart RightPart delimiter                 { Rule $1 $2 }
+LeftPart : nonterminal                              { StartTerminal (Lexer.tokenValue $1) }
+RightPart : epsilon                                 { [] }
+          | ActualRightPart                         { $1 }
+ActualRightPart : nonterminal ActualRightPart       { [Nonterminal (Lexer.tokenValue $1)] ++ $2 }
+                | terminal ActualRightPart          { [Terminal (Lexer.tokenValue $1)] ++ $2 }
+                | nonterminal                       { [Nonterminal (Lexer.tokenValue $1)] }
+                | terminal                          { [Terminal (Lexer.tokenValue $1)] }
 
 {
 data Rule = Rule LeftPart RightPart
-          deriving Show
-
+            deriving Show
 data LeftPart = StartTerminal String
-              deriving Show
+                deriving Show
 
 type RightPart = [Symbol]
 
-data Symbol = Terminal String 
+data Symbol = Terminal String
             | Nonterminal String
             deriving Show
 

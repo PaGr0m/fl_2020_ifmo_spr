@@ -1,4 +1,3 @@
-
 {-# LANGUAGE FlexibleContexts     #-}
 {-# LANGUAGE FlexibleInstances    #-}
 {-# LANGUAGE TypeSynonymInstances #-}
@@ -6,7 +5,7 @@
 module Main where
 
 import           Control.Monad.State.Strict
-import           Prelude                    hiding (init)
+import           Prelude
 import           System.Console.Repline
 import           System.Directory
 import           System.FilePath.Posix
@@ -36,6 +35,8 @@ opts = [
   , ("expression", recognizeExpression)
   , ("quit", quit)
   , ("help", help)
+  , ("run_lexer", runLexerWithFile)
+  , ("run_parser", runParserWithFile)
   ]
 
 load :: [String] -> Repl ()
@@ -66,6 +67,25 @@ showGrammars _ = do
     liftIO $ putStrLn "\n========================================\nFourth\n========================================\n"
     liftIO $ print grammar3
 
+-- VVV
+runLexerFromFile :: [String] -> Repl ()
+runLexerFromFile _ = do
+  file <- get
+  case file of
+    Just fl -> liftIO $ print (GrammarLexer.scanTokens fl)
+    Nothing -> liftIO $ print "No file loaded"
+
+runParserFromFile :: [String] -> Repl ()
+runParserFromFile _ = do
+  file <- get
+  case file of
+    Just fl -> do
+      let parsed = GrammarParser.runParser fl
+      let result = GrammarInternalConversion.fromInternalGrammar parsed
+      liftIO $ print result
+    Nothing -> liftIO $ print "No file loaded"
+-- ^^^
+
 recognizeParenthesesFromFile :: [String] -> Repl ()
 recognizeParenthesesFromFile _ = do
   file <- get
@@ -73,8 +93,7 @@ recognizeParenthesesFromFile _ = do
 
 
 recognizeParentheses :: [String] -> Repl ()
-recognizeParentheses input =
-    mapM_ (liftIO . checkString) input
+recognizeParentheses = mapM_ (liftIO . checkString)
   where
     checkString str =
       putStrLn $ message str (recognize grammar3 str)
@@ -85,8 +104,7 @@ message str b = printf "%s %s be derived"
                        (if b then "can" else "can't")
 
 recognizeExpression :: [String] -> Repl ()
-recognizeExpression input =
-    mapM_ (liftIO . checkString) input
+recognizeExpression = mapM_ (liftIO . checkString)
   where
     checkString str =
       putStrLn $ message str (recognize grammar2 str)
@@ -108,15 +126,17 @@ helpMessage =
           ":recognize\t\tTo check if the lines in the input file can be recognized \n\t\t\tby the forth grammar"
           ":quit\t\t\tTo quit"
           ":help\t\t\tTo print this message"
+          ":run_lexer\t\tRun lexer from file"
+          ":run_parser\t\tRun parser from file"
 
 
-init :: Repl ()
-init =
+initRepl :: Repl ()
+initRepl =
   liftIO $ putStrLn ("Welcome!\n" ++ helpMessage)
 
 -- Completion
 comp :: Monad m => WordCompleter m
-comp = listWordCompleter $ map (':' :) $ map fst opts
+comp = listWordCompleter $ map ((':' :) . fst) opts
 
 defaultMatcher :: MonadIO m => [(String, CompletionFunc m)]
 defaultMatcher = [
@@ -124,6 +144,5 @@ defaultMatcher = [
   ]
 
 repl = flip evalStateT Nothing
-     $ evalRepl (pure "REPL> ") cmd opts (Just ':') (Prefix (wordCompleter comp) defaultMatcher) init
-
+     $ evalRepl (pure "REPL> ") cmd opts (Just ':') (Prefix (wordCompleter comp) defaultMatcher) initRepl
 main = repl

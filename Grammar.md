@@ -2,21 +2,28 @@
 
 Любое правило в грамматике состоит из левой части (в которой обязательно находится нетерминал) и правой части (терминалы/нетерминалы). 
 
-Правила разделяются переносом строки, а вот в самом правиле разделение происходит при помощи пробелов.
+Правила разделяются специальным символом `;`. А вот в самом правиле разделение происходит при помощи пробелов. 
+
+В данной грамматике символ `#` выступает в качестве эпсилон.
 
 ``` Haskell
 Terminal = [a-z]+
 Nonterminal = [A-Z]+
 
-Grammar = Grammar Rule
-        | Rule
+Grammar = Rules
 
-Rule = LeftPart RightPart
+Rules = Rule Rules
+      | Rule 
+
+Rule = LeftPart RightPart;
 
 LeftPart = Nonterminal 
 
-RightPart = Nonterminal RightPart 
-          | Terminal RightPart
-          | Nonterminal
-          | Terminal
+RightPart = #
+          | ActualRightPart
+
+ActualRightPart = Nonterminal ActualRightPart 
+                | Terminal ActualRightPart
+                | Nonterminal
+                | Terminal
 ```
