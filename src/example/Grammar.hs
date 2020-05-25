@@ -45,7 +45,7 @@ oneStepDerivation g (Rhs syms) =
     (Nonterm n : ss) ->
       case Map.lookup n (unRules $ rules g) of
         Nothing -> Nothing
-        Just rhss -> Just [Rhs (terms ++ unRhs rhs ++ ss) | rhs <- rhss]
+        Just rhss -> Just $ [ Rhs (terms ++ unRhs rhs ++ ss) | rhs <- rhss ]
 
 -- Bruteforce recognition: works only for epsilon-free grammars.
 -- EXTREMELY slow!
@@ -58,8 +58,11 @@ recognize g str =
         Nothing -> False
         Just xs ->
           let (withNonterms, onlyTerminals) = partition (any isNonterm . unRhs) xs in
-          (any isInput onlyTerminals ||
-            (let toDerive = filter (not . tooLong) withNonterms in any go toDerive))
+          if any isInput onlyTerminals
+          then True
+          else
+            let toDerive = filter (not . tooLong) withNonterms in
+            or $ map go toDerive
     tooLong (Rhs x) = length x > length str
     isInput (Rhs x) = x == map Term str
 
@@ -111,7 +114,7 @@ grammar2 =
                                         , Rhs [Term '(', Nonterm "Expr", Term ')']
                                         ]
                             )
-                          , ("Num", map Rhs $ digit ++ map (Nonterm "Num" :) digit)
+                          , ("Num", map Rhs $ digit ++ (map (Nonterm "Num" :) digit))
                           ]
     digit = map ((:[]) . Term) ['0' .. '9']
 
@@ -126,14 +129,15 @@ grammar3 =
                                 ]
                           )]
 
+
 instance (Show term, Show nonterm) => Show (Symbol term nonterm) where
   show (Term x) = show x
   show (Nonterm x) = show x
 
 instance (Show term, Show nonterm) => Show (Rhs term nonterm) where
-  show (Rhs []) = "\\epsilon"
+  show (Rhs []) = "\\eps"
   show (Rhs xs) =
-      unwords $ map show xs
+      unwords $ map show $ xs
 
 instance (Show term, Show nonterm) => Show (Rules term nonterm) where
   show =
