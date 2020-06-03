@@ -67,18 +67,76 @@ unit_parseExpr = do
 
 unit_optimize :: Assertion
 unit_optimize = do
+    {-
+           Plus
+          /    \
+        Mult   Num 3        -->         Num 5
+       /    \
+    Num 1   Num 2
+    -}
     optimize (BinOp Plus (BinOp Mult (Num 1) (Num 2)) (Num 3)) @?= (Num 5)
+
+    {-
+           Mult
+          /    \
+        Mult   Num 3        -->         Num 6
+       /    \
+    Num 1   Num 2
+    -}
     optimize (BinOp Mult (BinOp Mult (Num 1) (Num 2)) (Num 3)) @?= (Num 6)
+
+    {-
+           Mult
+          /    \
+        Plus   Num 3        -->         Num 9
+       /    \
+    Num 1   Num 2
+    -}
     optimize (BinOp Mult (BinOp Plus (Num 1) (Num 2)) (Num 3)) @?= (Num 9)
 
+    {-
+           Mult                             Mult
+          /    \                          /      \
+        Plus   Num 3        -->         Plus   Num 3
+       /    \                          /    \
+    Num 5   Ident x                 Num 5   Ident x
+    -}
     optimize (BinOp Mult (BinOp Plus (Num 5) (Ident "x")) (Num 3)) @?= 
         (BinOp Mult (BinOp Plus (Num 5) (Ident "x")) (Num 3))
 
+    {-
+           Mult                             Mult
+          /    \                          /      \
+        Mult   Num 3        -->       Ident x   Num 3
+       /    \                          
+    Num 1   Ident x                 
+    -}
     optimize (BinOp Mult (BinOp Mult (Num 1) (Ident "x")) (Num 3)) @?= 
         (BinOp Mult (Ident "x") (Num 3))
 
+    {-
+           Mult                            
+          /    \                         
+        Mult   Num 3        -->         Num 0
+       /    \                          
+    Num 0   Ident x                 
+    -}
     optimize (BinOp Mult (BinOp Mult (Num 0) (Ident "x")) (Num 3)) @?= (Num 0)
-    optimize (BinOp Plus (BinOp Mult (Num 0) (Ident "x")) (Num 3)) @?= (Num 3)
 
+    {-
+           Plus                              Plus         
+          /    \                           /      \
+        Mult   Ident x       -->        Num 25    Ident x
+       /    \                          
+    Num 5   Num 5                 
+    -}
+    optimize (BinOp Plus (BinOp Mult (Num 5) (Num 5)) (Ident "x")) @?= (BinOp Plus (Num 25) (Ident "x"))
 
-
+    {-
+           Mult                                 
+          /    \                           
+        Mult   Ident x       -->        Num 0
+       /    \                          
+    Num 5   Num 5                 
+    -}
+    optimize (BinOp Mult (BinOp Mult (Num 0) (Num 5)) (Ident "x")) @?= (Num 0)

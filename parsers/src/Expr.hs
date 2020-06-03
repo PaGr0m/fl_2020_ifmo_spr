@@ -30,9 +30,9 @@ optimize (BinOp oop (BinOp iop (Num l) i@(Ident _)) (Num r))
 
 optimize (BinOp op left right) = 
     case BinOp op (optimize left) (optimize right) of
-        ast@(BinOp op (Num _)   (Num _))      -> optimize ast
+        ast@(BinOp op (Num _)   (Num _))    -> optimize ast
         ast@(BinOp op (Ident _) (Num _))    -> optimize ast
-        ast@(BinOp op (Num _)   (Ident _))    -> optimize ast
+        ast@(BinOp op (Num _)   (Ident _))  -> optimize ast
         ast@(BinOp op (Ident _) (Ident _))  -> optimize ast
         ast                                 -> ast
         
