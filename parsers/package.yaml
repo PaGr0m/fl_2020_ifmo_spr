@@ -1,6 +1,6 @@
-name:                fl2020-ifmo-spr
+name:                fl2020-itmo-spr
 version:             0.1.0.0
-github:              "kajigor/fl-2020-ifmo-spr"
+github:              "kajigor/fl-2020-itmo-spr"
 license:             BSD3
 author:              "Ekaterina Verbitskaia"
 maintainer:          "kajigor@gmail.com"
@@ -17,11 +17,12 @@ extra-source-files:
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://https://github.com/kajigor/fl-2020-ifmo-spr>
+description:         Please see the README on GitHub at <https://https://github.com/kajigor/fl-2020-itmo-spr>
 
 dependencies:
 - base >= 4.7 && < 5
 - hedgehog
+- containers
 - HUnit
 - tasty
 - tasty-hedgehog
@@ -32,30 +33,15 @@ library:
   source-dirs: src
 
 executables:
-  polish:
+  expr:
     main:                Main.hs
-    source-dirs:         app/polish
+    source-dirs:         app/expr
     dependencies:
-    - fl2020-ifmo-spr
-  digitSum:
-    main:                Main.hs
-    source-dirs:         app/digitSum
-    dependencies:
-    - fl2020-ifmo-spr
-  sum:
-    main:                Main.hs
-    source-dirs:         app/sum
-    dependencies:
-    - fl2020-ifmo-spr
-  arith:
-    main:                Main.hs
-    source-dirs:         app/arith
-    dependencies:
-    - fl2020-ifmo-spr
+    - fl2020-itmo-spr
 
 tests:
   test:
     main:                Test.hs
     source-dirs:         test
     dependencies:
-    - fl2020-ifmo-spr
+    - fl2020-itmo-spr
