@@ -148,6 +148,7 @@ unit_optimize = do
       Success "" (BinOp Plus (Ident "x") (BinOp Mult (BinOp Mult (Ident "x") (Num 5)) (Ident "y")))
 
     runParser (optimize <$> parseExpr) "x*x" @?= Success "" (BinOp Mult (Ident "x") (Ident "x"))
+    runParser (optimize <$> parseExpr) "x+x" @?= Success "" (BinOp Plus (Ident "x") (Ident "x"))
     
     runParser (optimize <$> parseExpr) "x*y*z" @?= 
       Success "" (BinOp Mult (BinOp Mult (Ident "x") (Ident "y")) (Ident "z"))
@@ -156,5 +157,3 @@ unit_optimize = do
 
     runParser (optimize <$> parseExpr) "x*0*y+a*5*b+2+c" @?= 
       Success "" (BinOp Plus (BinOp Plus (BinOp Plus (Num 0) (BinOp Mult (BinOp Mult (Ident "a") (Num 5)) (Ident "b"))) (Num 2)) (Ident "c"))
-
--- git commit -m "Fix Ident with Ident"
