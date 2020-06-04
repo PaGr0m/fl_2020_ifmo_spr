@@ -35,7 +35,6 @@ optimize (BinOp op left right) =
         ast@(BinOp op (Num _)   (Num _))    -> optimize ast
         ast@(BinOp op (Ident _) (Num _))    -> optimize ast
         ast@(BinOp op (Num _)   (Ident _))  -> optimize ast
-        ast@(BinOp op (Ident _) (Ident _))  -> optimize ast
         ast                                 -> ast
         
 optimize ast = ast
