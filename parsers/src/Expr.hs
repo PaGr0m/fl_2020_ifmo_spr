@@ -99,7 +99,7 @@ parseOp1 op = op >>= toOperator
 toOperator :: String -> Parser String String Operator
 toOperator "+"  = return Plus
 toOperator "*"  = return Mult
-toOperator _    = fail "Failed toOperator"
+toOperator _    = fail' "Failed toOperator"
 
 applyOp :: Operator -> Int -> Int -> Int
 applyOp op left right = compute (BinOp op (Num left) (Num right))

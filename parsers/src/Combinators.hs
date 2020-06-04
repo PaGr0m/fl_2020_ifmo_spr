@@ -45,9 +45,6 @@ instance (Monoid error, Read error) => Monad (Parser error input) where
       Success input' y -> runParser (x y) input'
       Failure e -> Failure e
 
-  -- Всегда завершается ошибкой
-  fail e = Parser (\_ -> Failure $ read e)
-
 instance (Monoid error, Read error) => Alternative (Parser error input) where
   empty = Parser (\_ -> Failure mempty)
 
@@ -102,3 +99,7 @@ some' :: (Monoid e, Read e) => Parser e i a -> Parser e i [a]
 some' p = do 
   res <- p
   (res:) <$> (some' p <|> return [])
+
+-- Всегда завершается ошибкой
+fail' :: e -> Parser e i a
+fail' e = Parser $ \input -> Failure e

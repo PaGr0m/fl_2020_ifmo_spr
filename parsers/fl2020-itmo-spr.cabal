@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f7c2bbda451e9baab8b7601f14eca275cb7ed543ea6df1e60d0aca9ede9db6d0
+-- hash: ba328c4636a629f3c65b36970b194fddfbd43c1d20723ccb83eb7f3a6eddfe8f
 
 name:           fl2020-itmo-spr
 version:        0.1.0.0
@@ -30,7 +30,6 @@ library
       AST
       Combinators
       Expr
-      Keyword
       UberExpr
   other-modules:
       Paths_fl2020_itmo_spr
@@ -71,7 +70,6 @@ test-suite test
   other-modules:
       Test.Combinators
       Test.Expr
-      Test.Keyword
       Paths_fl2020_itmo_spr
   hs-source-dirs:
       test
