@@ -13,11 +13,13 @@ optimize :: AST -> AST
 optimize (BinOp op (Num x) (Num y)) = Num $ applyOp op x y
 
 optimize ast@(BinOp op (Num x) (Ident y))
+  | op == Plus && x == 0  = Ident y
   | op == Mult && x == 0  = Num 0
   | op == Mult && x == 1  = Ident y
   | otherwise             = ast
 
 optimize ast@(BinOp op (Ident x) (Num y))
+  | op == Plus && y == 0  = Ident x
   | op == Mult && y == 0  = Num 0
   | op == Mult && y == 1  = Ident x
   | otherwise             = ast

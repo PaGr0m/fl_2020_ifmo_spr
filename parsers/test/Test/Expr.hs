@@ -140,3 +140,6 @@ unit_optimize = do
     Num 5   Num 5                 
     -}
     optimize (BinOp Mult (BinOp Mult (Num 0) (Num 5)) (Ident "x")) @?= (Num 0)
+
+    runParser (optimize <$> parseExpr) "0+1" @?= Success "" (Num 1)
+    runParser (optimize <$> parseExpr) "0+1*x" @?= Success "" (Ident "x")
