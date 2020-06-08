@@ -97,16 +97,6 @@ unit_optimize = do
     {-
            Mult                             Mult
           /    \                          /      \
-        Plus   Num 3        -->         Plus   Num 3
-       /    \                          /    \
-    Num 5   Ident x                 Num 5   Ident x
-    -}
-    optimize (BinOp Mult (BinOp Plus (Num 5) (Ident "x")) (Num 3)) @?= 
-        (BinOp Mult (BinOp Plus (Num 5) (Ident "x")) (Num 3))
-
-    {-
-           Mult                             Mult
-          /    \                          /      \
         Mult   Num 3        -->       Ident x   Num 3
        /    \                          
     Num 1   Ident x                 
@@ -141,6 +131,16 @@ unit_optimize = do
     -}
     optimize (BinOp Mult (BinOp Mult (Num 0) (Num 5)) (Ident "x")) @?= (Num 0)
 
+    {-
+           Mult                             Mult
+          /    \                          /      \
+        Plus   Num 3        -->         Plus   Num 3
+       /    \                          /    \
+    Num 5   Ident x                 Num 5   Ident x
+    -}
+    optimize (BinOp Mult (BinOp Plus (Num 5) (Ident "x")) (Num 3)) @?= 
+        (BinOp Mult (BinOp Plus (Num 5) (Ident "x")) (Num 3))
+
     runParser (optimize <$> parseExpr) "0+1" @?= Success "" (Num 1)
     runParser (optimize <$> parseExpr) "0+1*x" @?= Success "" (Ident "x")
 
@@ -155,5 +155,45 @@ unit_optimize = do
     runParser (optimize <$> parseExpr) "x*y+a*b+c" @?= 
       Success "" (BinOp Plus (BinOp Plus (BinOp Mult (Ident "x") (Ident "y")) (BinOp Mult (Ident "a") (Ident "b"))) (Ident "c"))
 
+    -- a*5*b + 2 + c
     runParser (optimize <$> parseExpr) "x*0*y+a*5*b+2+c" @?= 
-      Success "" (BinOp Plus (BinOp Plus (BinOp Plus (Num 0) (BinOp Mult (BinOp Mult (Ident "a") (Num 5)) (Ident "b"))) (Num 2)) (Ident "c"))
+      Success "" (BinOp Plus (BinOp Plus (BinOp Mult (BinOp Mult (Ident "a") (Num 5)) (Ident "b")) (Num 2)) (Ident "c"))
+
+    -- x*x
+    runParser (optimize <$> parseExpr) "0+x*x+1*0" @?= 
+      Success "" (BinOp Mult (Ident "x") (Ident "x"))
+
+    runParser (optimize <$> parseExpr) "1*2+3*4" @?= 
+      Success "" (Num 14)
+
+    runParser (optimize <$> parseExpr) "x*y+a*b" @?= 
+      Success "" (BinOp Plus (BinOp Mult (Ident "x") (Ident "y")) (BinOp Mult (Ident "a") (Ident "b")))
+
+    runParser (optimize <$> parseExpr) "1+2*3+4" @?= 
+      Success "" (Num 11)
+
+    runParser (optimize <$> parseExpr) "x+y*a+b" @?= 
+      Success "" (BinOp Plus (BinOp Plus (Ident "x") (BinOp Mult (Ident "y") (Ident "a"))) (Ident "b"))
+
+    runParser (optimize <$> parseExpr) "x" @?= 
+      Success "" (Ident "x")
+  
+    runParser (optimize <$> parseExpr) "1" @?= 
+      Success "" (Num 1)
+
+    runParser (optimize <$> parseExpr) "(1+1)" @?= 
+      Success "" (Num 2)
+    
+    runParser (optimize <$> parseExpr) "(1+2)*(3+4)" @?= 
+      Success "" (Num 21)
+
+    runParser (optimize <$> parseExpr) "(1+x)*(3+y)" @?= 
+      Success "" (BinOp Mult (BinOp Plus (Num 1) (Ident "x")) (BinOp Plus (Num 3) (Ident "y")))
+      
+    runParser (optimize <$> parseExpr) "0*(5+x)" @?= Success "" (Num 0)
+
+    runParser (optimize <$> parseExpr) "3+(5+0)" @?= Success "" (Num 8)
+    
+    runParser (optimize <$> parseExpr) "3+(5*0)" @?= Success "" (Num 3)
+
+    runParser (optimize <$> parseExpr) "(x*0)+(y*0)" @?= Success "" (Num 0)

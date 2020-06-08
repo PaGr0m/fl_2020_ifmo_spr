@@ -10,34 +10,26 @@ import Data.Bool
 
 -- Оптимизатор выражения
 optimize :: AST -> AST
-optimize (BinOp op (Num x) (Num y)) = Num $ applyOp op x y
+optimize leaf@(Num _)   = leaf
+optimize leaf@(Ident _) = leaf
+optimize (BinOp op (Num left) (Num right)) = Num $ applyOp op left right
 
-optimize ast@(BinOp op (Num x) (Ident y))
-  | op == Plus && x == 0  = Ident y
-  | op == Mult && x == 0  = Num 0
-  | op == Mult && x == 1  = Ident y
-  | otherwise             = ast
+optimize (BinOp Plus (Num x) right)   | x == 0  = optimize right
+optimize (BinOp Mult (Num x) right)   | x == 1  = optimize right
+optimize (BinOp Mult (Num x) right)   | x == 0  = Num 0
 
-optimize ast@(BinOp op (Ident x) (Num y))
-  | op == Plus && y == 0  = Ident x
-  | op == Mult && y == 0  = Num 0
-  | op == Mult && y == 1  = Ident x
-  | otherwise             = ast
+optimize (BinOp Plus left (Num x))    | x == 0  = optimize left
+optimize (BinOp Mult left (Num x))    | x == 1  = optimize left
+optimize (BinOp Mult left (Num x))    | x == 0  = Num 0
 
-optimize (BinOp oop (BinOp iop i@(Ident _) (Num l)) (Num r))
-    | oop == iop = optimize (BinOp oop i (Num $ applyOp oop l r))
-
-optimize (BinOp oop (BinOp iop (Num l) i@(Ident _)) (Num r))
-    | oop == iop = optimize (BinOp oop i (Num $ applyOp oop l r))
-
-optimize (BinOp op left right) = 
-    case BinOp op (optimize left) (optimize right) of
-        ast@(BinOp op (Num _)   (Num _))    -> optimize ast
-        ast@(BinOp op (Ident _) (Num _))    -> optimize ast
-        ast@(BinOp op (Num _)   (Ident _))  -> optimize ast
-        ast                                 -> ast
-        
-optimize ast = ast
+optimize ast@(BinOp _ (Num _) (Ident _))    = ast
+optimize ast@(BinOp _ (Ident _) (Num _))    = ast
+optimize ast@(BinOp _ (Ident _) (Ident _))  = ast
+optimize ast@(BinOp operator left right) = 
+  let 
+    res = BinOp operator (optimize left) (optimize right) 
+  in 
+    if res /= ast then optimize res else res
 
 -- Парсер арифметических выражений над целыми числами
 parseExpr :: Parser String String AST
