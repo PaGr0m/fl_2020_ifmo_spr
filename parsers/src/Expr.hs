@@ -14,13 +14,13 @@ optimize leaf@(Num _)   = leaf
 optimize leaf@(Ident _) = leaf
 optimize (BinOp op (Num left) (Num right)) = Num $ applyOp op left right
 
-optimize (BinOp Plus (Num x) right)   | x == 0  = optimize right
-optimize (BinOp Mult (Num x) right)   | x == 1  = optimize right
-optimize (BinOp Mult (Num x) right)   | x == 0  = Num 0
+optimize (BinOp Plus (Num 0) right) = optimize right
+optimize (BinOp Mult (Num 1) right) = optimize right
+optimize (BinOp Mult (Num 0) right) = Num 0
 
-optimize (BinOp Plus left (Num x))    | x == 0  = optimize left
-optimize (BinOp Mult left (Num x))    | x == 1  = optimize left
-optimize (BinOp Mult left (Num x))    | x == 0  = Num 0
+optimize (BinOp Plus left (Num 0))  = optimize left
+optimize (BinOp Mult left (Num 1))  = optimize left
+optimize (BinOp Mult left (Num 0))  = Num 0
 
 optimize ast@(BinOp _ (Num _) (Ident _))    = ast
 optimize ast@(BinOp _ (Ident _) (Num _))    = ast
